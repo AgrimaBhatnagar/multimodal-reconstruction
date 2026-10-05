@@ -1,0 +1,17 @@
+measurement:
+  default_confidence_level: 0.95
+  photo_wall_tolerance_pct: 8.0
+  video_wall_tolerance_pct: 3.0
+gates:
+  opening_abs_error_m: 0.02
+  opening_pass_rate: 0.85
+  ceiling_abs_error_m: 0.015
+  repeatability_abs_error_m: 0.01
+  wall_repeatability_abs_error_m: 0.01
+  wall_repeatability_rel: 0.005
+stitch:
+  max_room_gap_m: 2.5
+lidar:
+  depth_scale_m: 0.001
+  confidence_min: 1
+  voxel_size_m: 0.03

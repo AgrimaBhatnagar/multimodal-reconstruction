@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "property_id",
+    "rooms",
+    "adjacency",
+    "measurements",
+    "damage",
+    "scope"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "property_id": {
+      "type": "string"
+    },
+    "rooms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "room_id",
+          "walls",
+          "floor_area_m2",
+          "ceiling_height_m",
+          "openings"
+        ]
+      }
+    },
+    "adjacency": {
+      "type": "array"
+    },
+    "measurements": {
+      "type": "array"
+    },
+    "damage": {
+      "type": "array"
+    },
+    "scope": {
+      "type": "array"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+results_dir: benchmarks/results
+
+captures:
+  - name: single_room_lidar
+    tier: lidar
+    capture: ../spatial-reconstruction/benchmarks/extracted/single_room/c00a170fe1
+
+  - name: floor_only_lidar
+    tier: lidar
+    capture: ../spatial-reconstruction/benchmarks/extracted/single_scan_floor_only/1a8384c3f6
+
+  - name: ceiling_lidar
+    tier: lidar
+    capture: ../spatial-reconstruction/benchmarks/extracted/single_scan_with_ceiling/c7d28f72c6
+
+ground_truth:
+  opening_predicted_m: []
+  opening_measured_m: []
+  ceiling_predicted_m: []
+  ceiling_measured_m: []
