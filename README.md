@@ -1,79 +1,68 @@
-# Multimodal Reconstruction — Applied AI Engineer Case Study
+# Multimodal Reconstruction - Applied AI Engineer Case Study
 
 A local, reproducible engineering system for consumer-capture indoor reconstruction.
 
-## What this repository implements
+## Overview
 
-The implementation is organized around the complete case-study contract:
+This repository implements a multimodal indoor reconstruction pipeline designed around three consumer capture tiers:
 
-1. **Capture route**
-   - Route 2 stock capture protocol is documented.
-   - No custom iOS application is required.
-   - The protocol supports iPhone 15+ stills, handheld video, and Pro-device LiDAR.
+1. Photos
+2. Handheld video
+3. LiDAR
 
-2. **Three mandatory input tiers**
-   - Photos: 2–8 stills/room.
-   - Video: handheld walkthrough.
-   - LiDAR: depth + poses + intrinsics.
-   - Each tier is accepted independently and produces the same canonical property representation.
+Each tier is processed locally and converted into a canonical property representation. The system includes capture validation, reconstruction, geometry estimation, damage detection, uncertainty reporting, rendering, benchmarking, and evaluation tooling.
 
-3. **Canonical output**
-   - Per-room floor plan.
-   - Walls and wall lengths.
-   - Openings.
-   - Ceiling height.
-   - Floor area.
-   - Surface damage candidates and classes.
-   - Concealed-damage flags using an explicit rule.
-   - Scope line items.
-   - Confidence interval on every measurement.
-   - Multi-room adjacency graph.
-   - JSON schema validation.
-   - Rendered plan.
+The repository is designed to be reproducible and to distinguish verified physical measurements from provisional or unavailable benchmark results.
 
-4. **Benchmark / gate engine**
-   - Opening-width accuracy.
-   - Ceiling-height accuracy.
-   - Repeatability.
-   - Wall accuracy by tier.
-   - Photo-tier whole-property stitch.
-   - Drift accounting.
-   - Calibration at every tier.
-   - Consumer-app head-to-head evaluator.
-   - Timing.
-   - Automatic compliance report.
+---
 
-5. **Fix loop**
-   - Records the worst failing gate.
-   - Records the failing number and evidence.
-   - Records root cause.
-   - Runs the fix.
-   - Generates before/after comparison when two benchmark generations exist.
+## Implemented Capabilities
 
-6. **One-command execution**
-   - `python run.py --capture <capture_dir> --tier lidar`
-   - `python run.py --capture <capture_dir> --tier video`
-   - `python run.py --capture <capture_dir> --tier photos`
-   - `python run.py --benchmark benchmarks/benchmark_manifest.yaml`
+The current system includes:
 
-## Evidence policy
+- Photo capture validation
+- Handheld video capture processing
+- LiDAR/depth capture processing
+- Camera and capture metadata handling
+- Feature-based multi-view reconstruction for photos
+- Video frame extraction and reconstruction
+- Point-cloud processing
+- Floor and ceiling estimation
+- Wall geometry estimation
+- Opening detection framework
+- Surface damage detection
+- Damage classification
+- Concealed-damage flagging
+- Scope line-item generation
+- Measurement uncertainty representation
+- Multi-room stitching representation
+- Adjacency representation
+- JSON output generation
+- JSON schema validation
+- Rendered floor-plan output
+- Benchmark gate evaluation
+- Repeatability evaluation
+- Calibration checks
+- Drift-accounting framework
+- Consumer-application comparison framework
+- Fix-loop reporting
+- Local reproducibility tooling
 
-This repository does **not** fabricate physical accuracy.
+---
 
-The assessment requires laser/tape ground truth, repeated captures, three-tier captures, a connected multi-room capture, and a consumer-app comparison. Those physical measurements must be collected from the benchmark rooms.
+## Input Tiers
 
-The software is structured to evaluate these requirements once the corresponding raw captures and ground truth are supplied.
+### 1. Photos
 
-## Fresh-machine usage
+The photo pipeline accepts 2-8 still images for a room.
 
-```bash
-python -m venv .venv
+Expected formats:
 
-# Windows
-.venv\Scripts\activate
+- JPG
+- JPEG
+- PNG
 
-# macOS/Linux
-# source .venv/bin/activate
+Example:
 
-pip install -r requirements.txt
-python run.py --help
+```powershell
+python run.py --capture PHOTO_DIRECTORY --tier photos --name room_photos
