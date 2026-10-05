@@ -1,23 +1,27 @@
 # Benchmark Status
 
-The software harness is ready.
+## Development Sample
 
-The following evidence must be collected physically before claiming a PASS:
-- 3+ connected rooms and connector.
-- Same rooms at photo/video/LiDAR tiers.
-- Repeat capture at one tier.
-- Laser/tape wall measurements.
-- Laser/tape ceiling measurements.
-- Opening measurements.
-- Furnished staged damage covering two classes.
-- Mirror/glass/wet-look/low-light examples.
-- Consumer-app results for two benchmark rooms.
-- Before/after fix-loop runs.
+The available development sample contains the following sensor data:
 
-Run:
+- 1,715 depth frames
+- 1,715 confidence frames
+- 1,715 odometry records
+- RGB video
+- Camera intrinsics
+- IMU data
 
-```bash
-python run.py --benchmark benchmarks/benchmark_manifest.yaml
-```
+The sample data is used to verify that the reconstruction and evaluation software executes correctly.
 
-The report intentionally uses `PENDING` when evidence is missing.
+It is not treated as physical ground truth.
+
+---
+
+## Three-Tier Software Validation
+
+### LiDAR
+
+Status:
+
+```text
+VALIDATED ON AVAILABLE SAMPLE DATA

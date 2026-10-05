@@ -1,28 +1,34 @@
 # Compliance Matrix
 
-| Case-study requirement | Implementation | Evidence required | Status |
-|---|---|---|---|
-| Stock capture route | `protocols/capture_protocol.md` | operator follows protocol | READY |
-| Photos | `src/photo_video.py`, pipeline | 2–8 stills/room | READY |
-| Video | video extraction pipeline | handheld walkthrough | READY |
-| LiDAR | `src/lidar.py` | depth/poses/intrinsics | READY |
-| Per-room plan | geometry + renderer | benchmark capture | READY |
-| Multi-room stitch | `src/stitching.py` | 3+ connected rooms | READY |
-| Damage classes | `src/damage.py` | staged damage | READY |
-| Concealed damage rule | `concealed_damage_flags` | benchmark evidence | READY |
-| Scope line items | pipeline output | benchmark capture | READY |
-| CI on measurements | `src/measurements.py` | all output measurements | READY |
-| JSON schema | `schemas/output_schema.json` | generated JSON | READY |
-| Rendered plan | `src/rendering.py` | output PNG | READY |
-| Opening ≤2 cm / 85% | benchmark gate | laser/tape GT | PENDING UNTIL CAPTURE |
-| Ceiling ≤1.5 cm | benchmark gate | laser GT | PENDING UNTIL CAPTURE |
-| Repeatability | repeatability gate | repeated capture | PENDING UNTIL CAPTURE |
-| Drift ablation | benchmark manifest | poses-as-is vs correction | PENDING UNTIL CAPTURE |
-| Photo whole-property stitch | stitch graph | 3+ room photo set | PENDING UNTIL CAPTURE |
-| Photo wall ±8% | GT evaluator | tape/laser | PENDING UNTIL CAPTURE |
-| Video wall ±3% | GT evaluator | tape/laser | PENDING UNTIL CAPTURE |
-| Calibration every tier | calibration module | tier GT | PENDING UNTIL CAPTURE |
-| Consumer head-to-head | evaluator | 2 rooms x shared dims | PENDING UNTIL CAPTURE |
-| Fix loop | `src/fix_loop.py` | real before/after | PENDING UNTIL CAPTURE |
-| Commit process | Git history | commits during work | USER ACTION |
-| Cold walk-in | same CLI + local code | Bryz iPhone capture | EXTERNAL TEST |
+| Requirement | Status | Evidence |
+|---|---|---|
+| Stock capture route | PARTIAL | `protocols/capture_protocol.md` |
+| Device matrix | PASS | `reports/device_matrix.md` |
+| Photo tier | IMPLEMENTED / NOT PHYSICALLY VERIFIED | `src/photo_video.py`, `src/pipeline.py` |
+| Video tier | IMPLEMENTED / NOT PHYSICALLY VERIFIED | `src/photo_video.py`, `src/pipeline.py` |
+| LiDAR tier | IMPLEMENTED / NOT PHYSICALLY VERIFIED | `src/lidar.py`, `src/pipeline.py` |
+| Per-room plan | IMPLEMENTED | `src/pipeline.py`, `src/rendering.py` |
+| Walls with dimensions | PARTIAL | `src/geometry.py` |
+| Ceiling height | PARTIAL | `src/geometry.py` |
+| Floor area | IMPLEMENTED | `src/geometry.py` |
+| Openings | PARTIAL / NOT BENCHMARK VERIFIED | `src/openings.py` |
+| Surface damage candidates | IMPLEMENTED | `src/damage.py` |
+| Damage metric extent | PENDING PHYSICAL CALIBRATION | `src/damage.py` |
+| Concealed damage rule | IMPLEMENTED | `src/damage.py` |
+| Scope line items | IMPLEMENTED | `src/pipeline.py` |
+| Confidence intervals | IMPLEMENTED | `src/measurements.py` |
+| JSON output | PASS | `schemas/output_schema.json` |
+| Rendered plan | PASS | `src/rendering.py` |
+| One command per capture | PASS | `run.py` |
+| Photo whole-property stitch | PENDING PHYSICAL BENCHMARK | `src/stitching.py` |
+| Drift handling | IMPLEMENTED / SAMPLE VERIFIED | `src/lidar.py`, `reports/fix_loop.md` |
+| Drift ablation | SAMPLE VERIFIED | `scripts/fix_loop_compare.py` |
+| Calibration | PENDING EMPIRICAL VERIFICATION | `src/calibration.py` |
+| Repeatability | PENDING PHYSICAL CAPTURES | `tests/test_repeatability.py` |
+| Opening-width gate | PENDING LASER/TAPE GT | `src/benchmark.py` |
+| Ceiling-height gate | PENDING LASER/TAPE GT | `src/benchmark.py` |
+| Wall-accuracy gates | PENDING LASER/TAPE GT | `src/benchmark.py` |
+| Head-to-head | PENDING CONSUMER-APP RUN | `src/head_to_head.py` |
+| Fix loop | EVIDENCE READY | `reports/fix_loop.md`, `scripts/fix_loop_compare.py`, `benchmarks/results/fix_loop_sample.json` |
+| Reproduction bundle | PARTIAL | repository scripts and reports |
+| Technical report | PASS | `reports/technical_report.md` |

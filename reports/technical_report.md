@@ -1,21 +1,53 @@
-# Technical Report — 6 Page Structure
+# Technical Report
 
-## 1. Problem and contract
-Explain the three input tiers and canonical output.
+## 1. Objective
 
-## 2. Capture
-Explain Route 2, device matrix, operator controls and failure modes.
+The system is a local multimodal indoor-reconstruction pipeline for consumer capture.
 
-## 3. Reconstruction
-Explain depth projection, pose transformation, point-cloud filtering, geometric extraction and confidence.
+It accepts:
 
-## 4. Multi-room stitching
-Explain room representation and adjacency graph.
+- Photos
+- Handheld video
+- LiDAR/depth captures
 
-## 5. Damage and scope
-Explain surface anomaly candidates, damage classes, concealed-damage rule and scope line items.
+and produces a common structured property representation containing room geometry, walls, openings, damage candidates, scope information, uncertainty, and rendered plans.
 
-## 6. Benchmark and fix loop
-Report actual laser/tape measurements, repeatability, drift ablation, calibration, head-to-head and before/after fix evidence.
+The implementation prioritizes reproducibility, explicit uncertainty, graceful failure, and separation of development evidence from physical benchmark accuracy.
 
-Do not fill the final section with invented results.
+---
+
+## 2. System Architecture
+
+```text
+Consumer Capture
+      |
+      v
+Capture Validation
+      |
+      +-------------------+
+      |                   |
+    Photos              Video              LiDAR
+      |                   |                  |
+      +-------------------+------------------+
+                          |
+                          v
+                  Reconstruction
+                          |
+                          v
+              Canonical Room Representation
+                          |
+          +---------------+----------------+
+          |               |                |
+       Geometry        Damage          Uncertainty
+          |               |                |
+          +---------------+----------------+
+                          |
+                          v
+                  Property Representation
+                          |
+              +-----------+-----------+
+              |                       |
+            JSON                 Rendered Plan
+              |
+              v
+        Benchmark Evaluation

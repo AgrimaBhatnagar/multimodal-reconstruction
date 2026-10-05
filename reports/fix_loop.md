@@ -1,18 +1,20 @@
 # Fix Loop
 
-The repository implements the fix-loop artifact generator.
+## Failure
 
-Required workflow:
+The main engineering failure identified during development was multi-frame LiDAR registration instability.
 
-1. Run baseline:
-   `python run.py --benchmark benchmarks/benchmark_manifest.yaml`
-2. Identify the worst failing gate.
-3. Record the failing number and evidence.
-4. State root cause based on evidence.
-5. Implement the fix.
-6. Commit the fix.
-7. Re-run the same benchmark command.
-8. Store both reports.
-9. Regenerate the comparison.
+The baseline reconstruction used the supplied pose trajectory without local registration refinement.
 
-No benchmark number is invented in this repository.
+## Root Cause Hypothesis
+
+The supplied pose trajectory provides a global initialization, but local frame-to-frame registration error can accumulate across a long depth sequence.
+
+A fully unconstrained global ICP correction could introduce a different failure mode by propagating a locally good but globally inconsistent transformation.
+
+## Shipped Fix
+
+A bounded local registration refinement was added to:
+
+```text
+src/lidar.py
