@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 import numpy as np
 import pandas as pd
 import cv2
@@ -39,19 +39,17 @@ def load_odometry(path):
     missing = [c for c in required if c not in df.columns]
 
     if missing:
-        raise ValueError(
-            f"Missing odometry columns: {missing}"
-        )
+        raise ValueError(f"Missing odometry columns: {missing}")
 
     return df
 
 
 def pose_matrix(row):
     """
-    Odometry quaternion is interpreted as world -> camera.
+    Supplied odometry is treated as a world-to-camera pose.
 
-    Invert the pose to transform camera-frame depth points
-    into the world frame:
+    Camera-frame depth is converted to world coordinates with:
+
         p_world = R.T @ (p_camera - t)
     """
     R = Rotation.from_quat(
@@ -118,11 +116,95 @@ def depth_to_points(
     ).astype(np.float32)
 
 
+def _to_pcd(points, voxel):
+    pcd = o3d.geometry.PointCloud()
+    if len(points):
+        pcd.points = o3d.utility.Vector3dVector(
+            np.asarray(points, dtype=np.float64)
+        )
+        if voxel:
+            pcd = pcd.voxel_down_sample(float(voxel))
+    return pcd
+
+
+def _refine_against_previous(
+    current_world,
+    previous_world,
+    voxel=0.06,
+    max_correspondence=0.12,
+    max_iteration=30,
+):
+    """
+    Perform a bounded local ICP correction in world coordinates.
+
+    The correction is applied only to the current keyframe. It is not
+    propagated as a new global pose, which limits drift amplification.
+    """
+    source = _to_pcd(current_world, voxel)
+    target = _to_pcd(previous_world, voxel)
+
+    if len(source.points) < 50 or len(target.points) < 50:
+        return current_world, {
+            "accepted": False,
+            "fitness": 0.0,
+            "rmse": None,
+        }
+
+    result = o3d.pipelines.registration.registration_icp(
+        source,
+        target,
+        max_correspondence,
+        np.eye(4),
+        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
+        o3d.pipelines.registration.ICPConvergenceCriteria(
+            relative_fitness=1e-6,
+            relative_rmse=1e-6,
+            max_iteration=max_iteration,
+        ),
+    )
+
+    fitness = float(result.fitness)
+    rmse = float(result.inlier_rmse) if result.inlier_rmse else None
+
+    # Conservative acceptance rule.  The thresholds are deliberately
+    # recorded as metadata rather than presented as benchmark accuracy.
+    accepted = (
+        fitness >= 0.30
+        and rmse is not None
+        and rmse <= 0.08
+    )
+
+    if not accepted:
+        return current_world, {
+            "accepted": False,
+            "fitness": fitness,
+            "rmse": rmse,
+        }
+
+    T = np.asarray(result.transformation, dtype=float)
+    pts_h = np.c_[
+        current_world,
+        np.ones(len(current_world)),
+    ]
+
+    corrected = (
+        T @ pts_h.T
+    ).T[:, :3]
+
+    return corrected, {
+        "accepted": True,
+        "fitness": fitness,
+        "rmse": rmse,
+    }
+
+
 def reconstruct(
     capture_dir,
     voxel=0.03,
     confidence_min=1,
     max_frames=None,
+    refine_registration=True,
+    registration_stride=10,
 ):
     d = Path(capture_dir)
 
@@ -158,7 +240,13 @@ def reconstruct(
         )
     )
 
-    for dp in depth_files[:limit]:
+    previous_keyframe = None
+    accepted_refinements = 0
+    attempted_refinements = 0
+    fitness_values = []
+    rmse_values = []
+
+    for local_idx, dp in enumerate(depth_files[:limit]):
         cf = conf_by_name.get(dp.name)
 
         depth = cv2.imread(
@@ -204,6 +292,39 @@ def reconstruct(
             T @ pts_h.T
         ).T[:, :3]
 
+        is_keyframe = (
+            registration_stride > 0
+            and local_idx % registration_stride == 0
+        )
+
+        if (
+            refine_registration
+            and is_keyframe
+            and previous_keyframe is not None
+        ):
+            attempted_refinements += 1
+
+            world, reg = _refine_against_previous(
+                world,
+                previous_keyframe,
+            )
+
+            if reg["fitness"] > 0:
+                fitness_values.append(
+                    reg["fitness"]
+                )
+
+            if reg["rmse"] is not None:
+                rmse_values.append(
+                    reg["rmse"]
+                )
+
+            if reg["accepted"]:
+                accepted_refinements += 1
+
+        if is_keyframe:
+            previous_keyframe = world.copy()
+
         pcd.points.extend(
             o3d.utility.Vector3dVector(
                 world
@@ -215,11 +336,31 @@ def reconstruct(
             voxel
         )
 
+    registration_meta = {
+        "enabled": bool(refine_registration),
+        "stride": int(registration_stride),
+        "attempted": int(attempted_refinements),
+        "accepted": int(accepted_refinements),
+        "acceptance_fitness_threshold": 0.30,
+        "acceptance_rmse_threshold_m": 0.08,
+        "mean_fitness": (
+            float(np.mean(fitness_values))
+            if fitness_values
+            else None
+        ),
+        "mean_rmse_m": (
+            float(np.mean(rmse_values))
+            if rmse_values
+            else None
+        ),
+    }
+
     return pcd, {
         "frames": limit,
         "source_points": len(pcd.points),
         "K": K.tolist(),
         "pose_convention": "world_to_camera_inverted",
+        "registration_refinement": registration_meta,
     }
 
 
