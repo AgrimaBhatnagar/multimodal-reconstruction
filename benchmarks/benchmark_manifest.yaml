@@ -14,7 +14,16 @@ captures:
     capture: ../spatial-reconstruction/benchmarks/extracted/single_scan_with_ceiling/c7d28f72c6
 
 ground_truth:
+  source: benchmarks/ground_truth/benchmark_property.yaml
+
   opening_predicted_m: []
   opening_measured_m: []
+
   ceiling_predicted_m: []
   ceiling_measured_m: []
+
+  wall_predicted_m: []
+  wall_measured_m: []
+
+  repeat_capture_predicted_m: []
+  repeat_capture_measured_m: []

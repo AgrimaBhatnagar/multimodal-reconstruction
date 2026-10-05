@@ -16,3 +16,5 @@ benchmarks/results/*
 *.pcd
 *.las
 *.laz
+
+.pytest_cache/
